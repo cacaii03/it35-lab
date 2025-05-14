@@ -38,9 +38,9 @@ const About: React.FC = () => {
   
   const teamMembers = [
     {
-      name: 'Alex Johnson',
+      name: 'Mariel Saraum',
       role: 'Lead Developer',
-      avatar: 'https://i.pravatar.cc/150?img=1',
+      avatar: 'https://i.pinimg.com/736x/e2/b8/1e/e2b81e3ed5f71e1bbd1c2574ebf5b32a.jpg',
       contacts: {
         email: 'alex@appcompany.com',
         github: 'alexjdev',
@@ -48,9 +48,9 @@ const About: React.FC = () => {
       }
     },
     {
-      name: 'Sarah Chen',
+      name: 'Loren Dacol',
       role: 'UX Designer',
-      avatar: 'https://i.pravatar.cc/150?img=5',
+      avatar: 'https://i.pinimg.com/736x/6a/68/29/6a682996cf884ea52f6c33d630c4ff4b.jpg',
       contacts: {
         email: 'sarah@appcompany.com',
         github: 'sarahchen',
@@ -58,19 +58,19 @@ const About: React.FC = () => {
       }
     },
     {
-      name: 'Maricar balagan',
+      name: 'Maricar Balagan',
       role: 'Backend Engineer',
-      avatar: 'https://i.pravatar.cc/150?img=3',
+      avatar: 'https://i.pinimg.com/736x/ad/dc/4b/addc4b9dd6a7b45c265d2ee136b7cd12.jpg',
       contacts: {
         email: 'marcus@appcompany.com',
-        github: 'marcusw',
+        github: 'marcusw\\',
         linkedin: 'marcuswilliams'
       }
     },
     {
-      name: 'Renalou Cudo',
+      name: 'Renalou Butay',
       role: 'Product Manager',
-      avatar: 'https://i.pravatar.cc/150?img=8',
+      avatar: 'https://i.pinimg.com/736x/ef/12/fc/ef12fcb6dc459c4c82738619442cc4ff.jpg',
       contacts: {
         email: 'priya@appcompany.com',
         linkedin: 'priyapatel'
