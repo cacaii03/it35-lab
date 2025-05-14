@@ -1,0 +1,72 @@
+/* About.css - Add this file to the same directory as your About.tsx */
+
+.about-card, .tech-stack-card, .team-card, .contact-card {
+  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.section-icon {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.tech-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.tech-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.tech-icon.react {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1200px-React-icon.svg.png');
+}
+
+.tech-icon.ionic {
+  background-image: url('https://ionicframework.com/img/meta/logo.png');
+}
+
+.tech-icon.typescript {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Typescript_logo_2020.svg/1200px-Typescript_logo_2020.svg.png');
+}
+
+.tech-icon.node {
+  background-image: url('https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg');
+}
+
+.team-member {
+  margin-bottom: 10px;
+}
+
+.contact-links {
+  display: flex;
+  gap: 12px;
+  margin-top: 5px;
+}
+
+.contact-links a {
+  color: var(--ion-color-primary);
+  font-size: 18px;
+}
+
+.show-more {
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* For dark mode compatibility */
+@media (prefers-color-scheme: dark) {
+  .tech-icon.node {
+    background-image: url('https://nodejs.org/static/images/logos/nodejs-new-pantone-white.svg');
+  }
+}
