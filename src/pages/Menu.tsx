@@ -24,7 +24,7 @@ import About from './About';
 import Details from './Details';
 import { supabase } from '../utils/supabaseClient';
 import { useState } from 'react';
-import EditProfilePage from './EditProfile';
+import EditProfilePage from './Aboutme';
 
 
 const Menu: React.FC = () => {
