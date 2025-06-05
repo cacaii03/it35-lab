@@ -3,7 +3,6 @@ import {
   IonAvatar,
   IonButton,
   IonContent,
-  IonIcon,
   IonInput,
   IonInputPasswordToggle,
   IonPage,
@@ -13,17 +12,15 @@ import {
 import { useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 
-const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void }> = ({ message, isOpen, onClose }) => {
-  return (
-    <IonAlert
-      isOpen={isOpen}
-      onDidDismiss={onClose}
-      header="Notification"
-      message={message}
-      buttons={['OK']}
-    />
-  );
-};
+const AlertBox: React.FC<{ message: string; isOpen: boolean; onClose: () => void }> = ({ message, isOpen, onClose }) => (
+  <IonAlert
+    isOpen={isOpen}
+    onDidDismiss={onClose}
+    header="Notification"
+    message={message}
+    buttons={['OK']}
+  />
+);
 
 const Login: React.FC = () => {
   const navigation = useIonRouter();
@@ -52,118 +49,77 @@ const Login: React.FC = () => {
     <IonPage>
       <IonContent
         fullscreen
+        className="ion-padding"
         style={{
-          position: 'relative', // Make sure the content is positioned correctly
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          background: '#f5f6fa'
         }}
       >
-        {/* Background Image */}
         <div
           style={{
-            position: 'fixed', // fixed ensures it sticks even if content scrolls
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: 'url("https://i.pinimg.com/originals/17/f2/b5/17f2b53208febbb2c3b503e1e9087a20.gif")',
-            backgroundSize: 'cover',        // ensures image covers entire screen
-            backgroundPosition: 'center',   // keeps image centered
-            backgroundRepeat: 'no-repeat',
-            zIndex: -1,
-            width: '100vw',
-            height: '100vh',
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            padding: '48px 32px',
+            width: '100%',
+            maxWidth: '420px',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
           }}
-          
-        />
-
-        {/* Login Form */}
-        <div
-         style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.88)',
-          borderRadius: '10px',
-          padding: '20px',
-          width: '90%',
-          maxWidth: '400px',
-          margin: 'auto',
-          marginTop: '15%',
-          textAlign: 'center',
-          border: '1px solid black', // Black border
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4), 0 0 15px yellow' // Black + Yellow shadow
-        }}
-        
         >
-         <IonAvatar
-  style={{
-    margin: '0 auto',
-    marginBottom: '20px',
-    width: '100px',
-    height: '100px',
-    border: '1px solid black', // Yellow border
-    borderRadius: '50%',
-    boxSizing: 'border-box',
-    boxShadow: '0 0 20px 5px rgba(255, 255, 0, 0.6)'
-  }}
->
-  <img
-    src="https://thumbs.dreamstime.com/b/fashion-illustration-girl-holding-sunflower-woman-portrait-fashion-illustration-girl-holding-sunflower-woman-portrait-hand-150840175.jpg"
-    alt="sun"
-    style={{
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover',
-      borderRadius: '50%',
-    }}
-  />
-</IonAvatar>
-
-          <h2 style={{ marginBottom: '20px', fontWeight: 'bold' }}>User Login</h2>
-
+          <IonAvatar style={{ margin: '0 auto 24px', width: '100px', height: '100px' }}>
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/727/727245.png"
+              alt="music note"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+            />
+          </IonAvatar>
+          <h2 style={{ marginBottom: '28px', fontWeight: 'bold', fontSize: '2rem' }}>Music Login</h2>
           <IonInput
             label="Email"
             labelPlacement="floating"
             fill="outline"
-            color={'dark'}
             type="email"
-            placeholder="Enter Email"
+            placeholder="Enter your music email"
             value={email}
             onIonChange={e => setEmail(e.detail.value!)}
+            style={{ fontSize: '1.1rem' }}
           />
           <IonInput
-            style={{ marginTop: '10px' }}
+            style={{ marginTop: '16px', fontSize: '1.1rem' }}
             fill="outline"
-            color={'dark'}
             type="password"
-            placeholder="Password"
+            placeholder="Enter your password"
             value={password}
             onIonChange={e => setPassword(e.detail.value!)}
           >
-            <IonInputPasswordToggle slot="end" color={'dark'} className="custom-eye-icon" />
+            <IonInputPasswordToggle slot="end" />
           </IonInput>
-
-          <IonButton onClick={doLogin} expand="full" color={'dark'} shape="round" style={{ marginTop: '20px' }}>
+          <IonButton onClick={doLogin} expand="block" color="primary" style={{ marginTop: '28px', fontSize: '1.1rem' }}>
             Login
           </IonButton>
-
           <IonButton
             routerLink="/it35-lab/register"
-            expand="full"
+            expand="block"
             fill="clear"
-            color={'dark'}
-            shape="round"
-            style={{ marginTop: '10px' }}
+            color="medium"
+            style={{ marginTop: '12px', fontSize: '1rem' }}
           >
-            Don't have an account? Register here
+            Don't have an account? Register
           </IonButton>
         </div>
-
-        {/* Alert and Toast */}
         <AlertBox message={alertMessage} isOpen={showAlert} onClose={() => setShowAlert(false)} />
-
         <IonToast
           isOpen={showToast}
           onDidDismiss={() => setShowToast(false)}
           message="Login successful! Redirecting..."
           duration={1500}
-          position="top"
+          position="middle"
           color="primary"
         />
       </IonContent>
