@@ -28,13 +28,11 @@ const FeedContainer = () => {
   });
 
   useEffect(() => {
-    // Check auth on mount and listen for changes
-    checkAuthAndFetch();
+    fetchUserAndPosts();
     
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('Auth state changed:', _event, session?.user?.email);
-      checkAuthAndFetch();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      fetchUserAndPosts();
     });
     
     return () => {
@@ -42,43 +40,34 @@ const FeedContainer = () => {
     };
   }, []);
 
-  const checkAuthAndFetch = async () => {
-    await fetchUserAndPosts();
-  };
-
   const fetchUserAndPosts = async () => {
     setLoading(true);
     console.log('=== STARTING FETCH ===');
     
     try {
       // Get current session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       console.log('Session:', session);
-      console.log('Session error:', sessionError);
-      
-      if (sessionError) {
-        console.error('Session error:', sessionError);
-      }
       
       if (session?.user?.email) {
         console.log('User email found:', session.user.email);
         
+        // Fetch user from users table using email
         const { data: userData, error } = await supabase
           .from('users')
           .select('*')
           .eq('user_email', session.user.email)
-          .maybeSingle(); // Changed from .single() to .maybeSingle() to avoid errors
+          .maybeSingle();
         
-        console.log('User data from users table:', userData);
-        console.log('User error:', error);
+        console.log('User data:', userData);
         
         if (userData) {
           setUser(userData);
           setUsername(userData.username);
-          console.log('User set successfully:', userData);
         } else {
-          console.log('User not found in users table, creating placeholder');
-          // Don't set user if not found
+          console.log('User not found in users table');
+          setUser(null);
+          setUsername(null);
         }
       } else {
         console.log('No user logged in');
@@ -86,18 +75,16 @@ const FeedContainer = () => {
         setUsername(null);
       }
       
-      // Fetch posts regardless of login status
+      // Fetch all posts
       const { data, error } = await supabase
         .from('posts')
         .select('*')
         .order('post_created_at', { ascending: false });
       
       console.log('Posts data:', data);
-      console.log('Posts error:', error);
       
       if (!error && data) {
         setPosts(data as Post[]);
-        console.log('Posts set successfully, count:', data.length);
       } else if (error) {
         console.error('Error fetching posts:', error);
       }
@@ -105,29 +92,22 @@ const FeedContainer = () => {
       console.error('Unexpected error:', error);
     } finally {
       setLoading(false);
-      console.log('=== FETCH COMPLETE ===');
     }
   };
 
-  // Handle pull to refresh
   const handleRefresh = async (event: CustomEvent) => {
     await fetchUserAndPosts();
     event.detail.complete();
   };
 
   const createPost = async () => {
-    console.log('Creating post...');
-    console.log('User:', user);
-    console.log('Username:', username);
-    console.log('Post content:', postContent);
-    
     if (!postContent.trim()) {
       setAlertMessage('Please enter some content');
       setIsAlertOpen(true);
       return;
     }
     
-    // Get fresh session to ensure user is logged in
+    // Get fresh session
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session?.user) {
@@ -136,41 +116,43 @@ const FeedContainer = () => {
       return;
     }
     
-    if (!user || !username) {
+    if (!user) {
       setAlertMessage('Please complete your profile first');
       setIsAlertOpen(true);
       return;
     }
-  
-    // Fetch avatar URL
-    const { data: userData, error: userError } = await supabase
+    
+    // Get user ID - use 'id' as the primary key
+    const userId = user.id;
+    
+    if (!userId) {
+      setAlertMessage('User ID not found');
+      setIsAlertOpen(true);
+      return;
+    }
+    
+    // Get avatar URL
+    const { data: userData } = await supabase
       .from('users')
       .select('user_avatar_url')
-      .eq('user_id', user.user_id)
+      .eq('id', userId)
       .maybeSingle();
-  
-    if (userError) {
-      console.error('Error fetching user avatar:', userError);
-    }
-  
+    
     const avatarUrl = userData?.user_avatar_url || 'https://ionicframework.com/docs/img/demos/avatar.svg';
-    console.log('Avatar URL:', avatarUrl);
-  
-    // Insert post with avatar URL
+    
+    // Insert post
     const { data, error } = await supabase
       .from('posts')
       .insert([
         { 
           post_content: postContent, 
-          user_id: user.user_id, 
+          user_id: userId, 
           username: username, 
           avatar_url: avatarUrl 
         }
       ])
       .select('*');
-  
-    console.log('Insert result:', { data, error });
-  
+    
     if (!error && data) {
       setPosts([data[0] as Post, ...posts]);
       setPostContent('');
@@ -183,13 +165,10 @@ const FeedContainer = () => {
   };
 
   const deletePost = async (post_id: string) => {
-    console.log('Deleting post:', post_id);
     const { error } = await supabase
       .from('posts')
       .delete()
       .match({ post_id });
-    
-    console.log('Delete error:', error);
     
     if (!error) {
       setPosts(posts.filter(post => post.post_id !== post_id));
@@ -244,7 +223,6 @@ const FeedContainer = () => {
   return (
     <>
       <IonContent className="ion-padding">
-        {/* Pull to refresh */}
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
           <IonRefresherContent pullingIcon={refreshOutline} pullingText="Pull to refresh" refreshingSpinner="circles" />
         </IonRefresher>
@@ -268,7 +246,6 @@ const FeedContainer = () => {
               </div>
             </IonCard>
 
-            {/* Posts List */}
             {posts.length === 0 ? (
               <IonCard>
                 <IonCardContent style={{ textAlign: 'center', padding: '40px' }}>
@@ -297,7 +274,7 @@ const FeedContainer = () => {
                           {new Date(post.post_created_at).toLocaleString()}
                         </IonCardSubtitle>
                       </IonCol>
-                      {post.user_id === user?.user_id && (
+                      {post.user_id === user?.id && (
                         <IonCol size="auto">
                           <IonButton
                             fill="clear"
@@ -362,7 +339,6 @@ const FeedContainer = () => {
         )}
       </IonContent>
 
-      {/* Edit Post Modal */}
       <IonModal isOpen={isModalOpen} onDidDismiss={() => setIsModalOpen(false)}>
         <IonHeader>
           <IonToolbar>
@@ -383,7 +359,6 @@ const FeedContainer = () => {
         </IonFooter>
       </IonModal>
 
-      {/* Alert for notifications */}
       <IonAlert
         isOpen={isAlertOpen}
         onDidDismiss={() => setIsAlertOpen(false)}
