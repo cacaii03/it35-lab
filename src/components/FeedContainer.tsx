@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { IonContent, IonButton, IonInput, IonLabel, IonModal, IonFooter, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonAlert, IonText, IonAvatar, IonCol, IonRow, IonIcon, IonPopover, IonSpinner, IonHeader, IonTitle, IonToolbar, IonRefresher, IonRefresherContent } from '@ionic/react';
 import { supabase } from '../utils/supabaseClient';
-import { pencil, trash, refreshOutline } from 'ionicons/icons';
+import { pencil, trash, refreshOutline, heart, heartOutline } from 'ionicons/icons';
 
 interface Post {
   post_id: string;
@@ -11,6 +11,7 @@ interface Post {
   post_content: string;
   post_created_at: string;
   post_updated_at: string;
+  is_favorite: boolean;
 }
 
 const FeedContainer = () => {
@@ -42,16 +43,12 @@ const FeedContainer = () => {
 
   const fetchUserAndPosts = async () => {
     setLoading(true);
-    console.log('=== STARTING FETCH ===');
     
     try {
       // Get current session
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('Session:', session);
       
       if (session?.user?.email) {
-        console.log('User email found:', session.user.email);
-        
         // Fetch user from users table using email
         const { data: userData, error } = await supabase
           .from('users')
@@ -59,34 +56,26 @@ const FeedContainer = () => {
           .eq('user_email', session.user.email)
           .maybeSingle();
         
-        console.log('User data:', userData);
-        
         if (userData) {
           setUser(userData);
           setUsername(userData.username);
         } else {
-          console.log('User not found in users table');
           setUser(null);
           setUsername(null);
         }
       } else {
-        console.log('No user logged in');
         setUser(null);
         setUsername(null);
       }
       
-      // Fetch all posts
+      // Fetch all posts with favorite status
       const { data, error } = await supabase
         .from('posts')
         .select('*')
         .order('post_created_at', { ascending: false });
       
-      console.log('Posts data:', data);
-      
       if (!error && data) {
         setPosts(data as Post[]);
-      } else if (error) {
-        console.error('Error fetching posts:', error);
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -98,6 +87,27 @@ const FeedContainer = () => {
   const handleRefresh = async (event: CustomEvent) => {
     await fetchUserAndPosts();
     event.detail.complete();
+  };
+
+  const toggleFavorite = async (postId: string, currentStatus: boolean) => {
+    const { error } = await supabase
+      .from('posts')
+      .update({ is_favorite: !currentStatus })
+      .match({ post_id: postId });
+    
+    if (!error) {
+      // Update local state
+      setPosts(posts.map(post => 
+        post.post_id === postId 
+          ? { ...post, is_favorite: !currentStatus }
+          : post
+      ));
+      setAlertMessage(!currentStatus ? 'Added to favorites!' : 'Removed from favorites');
+      setIsAlertOpen(true);
+    } else {
+      setAlertMessage('Error updating favorite');
+      setIsAlertOpen(true);
+    }
   };
 
   const createPost = async () => {
@@ -122,16 +132,8 @@ const FeedContainer = () => {
       return;
     }
     
-    // Get user ID - use 'id' as the primary key
     const userId = user.id;
     
-    if (!userId) {
-      setAlertMessage('User ID not found');
-      setIsAlertOpen(true);
-      return;
-    }
-    
-    // Get avatar URL
     const { data: userData } = await supabase
       .from('users')
       .select('user_avatar_url')
@@ -140,7 +142,6 @@ const FeedContainer = () => {
     
     const avatarUrl = userData?.user_avatar_url || 'https://ionicframework.com/docs/img/demos/avatar.svg';
     
-    // Insert post
     const { data, error } = await supabase
       .from('posts')
       .insert([
@@ -148,7 +149,8 @@ const FeedContainer = () => {
           post_content: postContent, 
           user_id: userId, 
           username: username, 
-          avatar_url: avatarUrl 
+          avatar_url: avatarUrl,
+          is_favorite: false
         }
       ])
       .select('*');
@@ -273,6 +275,19 @@ const FeedContainer = () => {
                         <IonCardSubtitle>
                           {new Date(post.post_created_at).toLocaleString()}
                         </IonCardSubtitle>
+                      </IonCol>
+                      <IonCol size="auto">
+                        {/* Favorite Button */}
+                        <IonButton
+                          fill="clear"
+                          onClick={() => toggleFavorite(post.post_id, post.is_favorite)}
+                        >
+                          <IonIcon 
+                            icon={post.is_favorite ? heart : heartOutline} 
+                            color={post.is_favorite ? 'danger' : 'medium'}
+                            style={{ fontSize: '24px' }}
+                          />
+                        </IonButton>
                       </IonCol>
                       {post.user_id === user?.id && (
                         <IonCol size="auto">
